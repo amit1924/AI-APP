@@ -1,0 +1,780 @@
+import React, { useState, useEffect, useRef } from "react";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
+import "./chat.css";
+import { useNavigate } from "react-router-dom";
+
+function Chat() {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState(() => {
+    const storedMessages = localStorage.getItem("messages");
+    return storedMessages ? JSON.parse(storedMessages) : [];
+  });
+
+  const [context, setContext] = useState({});
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showDefaultMessage, setShowDefaultMessage] = useState(true);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const [language, setLanguage] = useState("en-IN");
+  const [isSpeechInput, setIsSpeechInput] = useState(false); // New state for differentiating speech input
+  const chatContainerRef = useRef(null);
+  const bottomRef = useRef(null);
+  const userScrolledUp = useRef(false);
+  const recognitionRef = useRef(null);
+  const speechRef = useRef(null);
+  const [weather, setWeather] = useState("");
+  const [temperature, setTemperature] = useState("");
+  const [humidity, setHumidity] = useState("");
+  const [wind, setWind] = useState("");
+  const [city, setCity] = useState("");
+
+  const API_URL =
+    "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+
+  const fetchWeather = async (city) => {
+    try {
+      const response = await fetch(
+        `${API_URL}${city}&appid=${import.meta.env.VITE_WEATHER_API_KEY}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Weather data:", data);
+        const weatherDescription = data.weather[0].description;
+        const temp = Math.round(data.main.temp);
+        const humidity = data.main.humidity;
+        const windSpeed = data.wind.speed;
+
+        // Create a message to display
+        const weatherMessage = `The weather in ${data.name} is ${weatherDescription}. The temperature is ${temp}°C with a humidity of ${humidity}%. Wind speed is ${windSpeed} km/h.`;
+        speakText(weatherMessage);
+
+        // Update messages with the weather info
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", type: "text", content: weatherMessage },
+        ]);
+
+        setWeather(weatherDescription);
+        setTemperature(`${temp}°C`);
+        setHumidity(`${humidity}%`);
+        setWind(`${windSpeed} km/h`);
+      } else {
+        console.error("Weather API response not OK:", response.status);
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", type: "text", content: "City not found" },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching weather:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          type: "text",
+          content: "Sorry, I couldn't fetch the weather information.",
+        },
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    localStorage.setItem("messages", JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
+    if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = language;
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript); // Set input with the recognized text
+        setIsSpeechInput(true); // Set speech input flag to true
+
+        // Call handleSend after a short delay to ensure state update
+
+        setTimeout(async () => {
+          const cityRegex = /weather in (\w+)/i; // Example: "weather in Bhopal"
+          const match = transcript.match(cityRegex);
+
+          if (match && match[1]) {
+            const city = match[1];
+            await fetchWeather(city);
+            // Fetch weather for the extracted city
+          } else {
+            await handleSend(); // Handle normal message send
+          }
+        }, 100);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+      };
+
+      recognitionRef.current.onstart = () => {
+        setIsFlashing(true);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsFlashing(false);
+      };
+    } else {
+      alert("Your browser does not support speech recognition.");
+    }
+  }, [language]);
+
+  useEffect(() => {
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userScrolledUp.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  const fetchAIResponse = async (message) => {
+    const apiKey = import.meta.env.VITE_API_KEY;
+    setLoading(true);
+
+    try {
+      // Check if the message includes weather-related keywords
+      const shouldIncludeTemperature =
+        message.toLowerCase().includes("weather") ||
+        message.toLowerCase().includes("temperature");
+      message.toLowerCase().includes("weather of") ||
+        message.toLowerCase().includes("temperature of");
+      message.toLowerCase().includes("weather in") ||
+        message.toLowerCase().includes("temperature in");
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                // Conditionally include temperature in the message based on the user's input
+                parts: [
+                  {
+                    text: shouldIncludeTemperature
+                      ? `${message}. The temperature is ${temperature}.`
+                      : message,
+                  },
+                ],
+              },
+              // Add context to the request if available
+              ...(Object.keys(context).length > 0
+                ? [
+                    {
+                      role: "user",
+                      parts: [
+                        {
+                          text: `Context: ${Object.values(context).join(", ")}`,
+                        },
+                      ],
+                    },
+                  ]
+                : []),
+            ],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (
+        data.candidates &&
+        data.candidates.length > 0 &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts.length > 0
+      ) {
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        const cleanedResponse = sanitizeText(aiResponse);
+        speakText(cleanedResponse);
+        setShowDefaultMessage(false);
+
+        // update context if the response contains a keyword
+        const keywords = aiResponse.match(/([A-Z][a-z]+ [A-Z][a-z]+)/g);
+        if (keywords) {
+          setContext((prevContext) => ({ ...prevContext, ...keywords }));
+        }
+
+        return aiResponse;
+      } else {
+        return "No response from the AI.";
+      }
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      return "An error occurred while fetching the response.";
+    } finally {
+      setLoading(false);
+    }
+  };
+  const sanitizeText = (text) => {
+    return text.replace(/\*\*/g, "").replace(/\*/g, "");
+  };
+
+  const cityRegex =
+    /(weather in|weather of|temperature in|temperature of)\s+([\w\s]+)/i;
+
+  // const handleSend = async () => {
+  //   if (input.trim() === "") return;
+
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { sender: "user", type: "text", content: input },
+  //   ]);
+
+  //   // // Check if the input contains a request for weather in a specific city
+  //   // const match = input.match(cityRegex);
+  //   // setLoading(true);
+
+  //   // if (match && match[2]) {
+  //   //   // Access the second capturing group for the city name
+  //   //   const city = match[2].trim(); // Get the city name
+  //   //   await fetchWeather(city);
+  //   //   setLoading(false);
+  //   //   // Fetch weather for the extracted city
+  //   // } else {
+  //   //   const aiResponse = await fetchAIResponse(input);
+  //   //   setMessages((prev) => [
+  //   //     ...prev,
+  //   //     { sender: "ai", type: "text", content: aiResponse },
+  //   //   ]);
+  //   // }
+
+  //   // setInput("");
+  //   // setIsSpeechInput(false); // Reset speech input flag after sending
+
+  //   //////////////////////////////
+
+  //   // Check for date/time request
+  //   const dateRegex =
+  //     /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
+
+  //   const matchDate = input.match(dateRegex);
+
+  //   if (matchDate) {
+  //     const now = new Date();
+  //     const date = now.toLocaleDateString(); // e.g., "9/23/2024"
+  //     const time = now.toLocaleTimeString([], {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //     }); // e.g., "14:30"
+
+  //     const dateResponse = `Current date is ${date} and the time is ${time}.`;
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       { sender: "ai", type: "text", content: dateResponse },
+  //     ]);
+  //     speakText(dateResponse);
+  //   } else {
+  //     // Check if the input contains a request for weather in a specific city
+  //     const match = input.match(cityRegex);
+
+  //     if (match && match[2]) {
+  //       const city = match[2].trim(); // Get the city name
+  //       await fetchWeather(city);
+  //     } else {
+  //       const aiResponse = await fetchAIResponse(input);
+  //       setMessages((prev) => [
+  //         ...prev,
+  //         { sender: "ai", type: "text", content: aiResponse },
+  //       ]);
+  //     }
+  //   }
+
+  //   setLoading(false);
+  //   setInput("");
+  //   setIsSpeechInput(false); // Reset speech input flag after sending
+  // };
+
+  ///////////////////////////////////////////
+  // const handleSend = async () => {
+  //   if (input.trim() === "") return;
+
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { sender: "user", type: "text", content: input },
+  //   ]);
+
+  //   // Check for date/time request
+  //   const dateRegex =
+  //     /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
+
+  //   const matchDate = input.match(dateRegex);
+
+  //   if (matchDate) {
+  //     const now = new Date();
+  //     const date = now.toLocaleDateString();
+  //     const time = now.toLocaleTimeString([], {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //     });
+
+  //     const dateResponse = `Current date is ${date} and the time is ${time}.`;
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       { sender: "ai", type: "text", content: dateResponse },
+  //     ]);
+  //     speakText(dateResponse);
+  //   } else {
+  //     // Check if the input contains a URL
+  //     const urlRegex = /https?:\/\/[^\s]+/i;
+  //     const urlMatch = input.match(urlRegex);
+
+  //     if (urlMatch) {
+  //       const website = urlMatch[0];
+  //       const openingMessage = `Opening website, sir.`;
+  //       setMessages((prev) => [
+  //         ...prev,
+  //         { sender: "ai", type: "text", content: openingMessage },
+  //       ]);
+  //       speakText(openingMessage);
+  //       window.open(website, "_blank"); // Open the URL in a new tab
+  //     } else {
+  //       // Check if the input contains a request for weather in a specific city
+  //       const match = input.match(cityRegex);
+  //       if (match && match[2]) {
+  //         const city = match[2].trim();
+  //         await fetchWeather(city);
+  //       } else {
+  //         const aiResponse = await fetchAIResponse(input);
+  //         setMessages((prev) => [
+  //           ...prev,
+  //           { sender: "ai", type: "text", content: aiResponse },
+  //         ]);
+  //       }
+  //     }
+  //   }
+
+  //   setLoading(false);
+  //   setInput("");
+  //   setIsSpeechInput(false);
+  // };
+
+  /////////////////////////////////////////////////////////////////
+  // const handleSend = async () => {
+  //   if (input.trim() === "") return;
+
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { sender: "user", type: "text", content: input },
+  //   ]);
+
+  //   // Check for date/time request
+  //   const dateRegex =
+  //     /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
+
+  //   const matchDate = input.match(dateRegex);
+  //   const command = input.toLowerCase(); // Normalize the input for command checks
+
+  //   if (matchDate) {
+  //     const now = new Date();
+  //     const date = now.toLocaleDateString();
+  //     const time = now.toLocaleTimeString([], {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //     });
+
+  //     const dateResponse = `Current date is ${date} and the time is ${time}.`;
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       { sender: "ai", type: "text", content: dateResponse },
+  //     ]);
+  //     speakText(dateResponse);
+  //   } else if (command.includes("open ")) {
+  //     const appName = command.split("open ")[1].trim();
+
+  //     // Check for specific apps if you want (similar to your Python apps dictionary)
+  //     const apps = {
+  //       notepad: "C:\\Windows\\system32\\notepad.exe",
+  //       calculator: "C:\\Windows\\system32\\calc.exe",
+  //       // Add more apps if needed
+  //     };
+
+  //     if (apps[appName]) {
+  //       // For local applications, you can't open them directly in the browser
+  //       // You might need to run a backend service for that
+  //       speakText(`Opening ${appName}, sir...`);
+  //     } else if (command.includes("song")) {
+  //       const songName = appName;
+  //       const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+  //         songName
+  //       )}`;
+  //       window.open(searchUrl, "_blank");
+  //       speakText(`Opening ${songName} on YouTube, sir...`);
+  //     } else {
+  //       let site = appName;
+
+  //       // Constructing the URL
+  //       if (!site.startsWith("http")) {
+  //         if (!site.startsWith("www.")) {
+  //           site = "www." + site;
+  //         }
+  //         site += ".com";
+  //       }
+  //       window.open("http://" + site, "_blank");
+  //       speakText(`Opening ${site.split(".")[1]}, sir...`);
+  //     }
+  //   } else {
+  //     // Check if the input contains a request for weather in a specific city
+  //     const match = input.match(cityRegex);
+  //     if (match && match[2]) {
+  //       const city = match[2].trim();
+  //       await fetchWeather(city);
+  //     } else {
+  //       const aiResponse = await fetchAIResponse(input);
+  //       setMessages((prev) => [
+  //         ...prev,
+  //         { sender: "ai", type: "text", content: aiResponse },
+  //       ]);
+  //     }
+  //   }
+
+  //   setInput(""); // Clear input after processing
+  //   setIsSpeechInput(false); // Reset speech input flag after sending
+  // };
+
+  ///////////////////////////fetch news /////////////////////////
+  const handleSend = async () => {
+    if (input.trim() === "") return;
+
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", type: "text", content: input },
+    ]);
+
+    // Check for date/time request
+    const dateRegex =
+      /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
+
+    const matchDate = input.match(dateRegex);
+    const command = input.toLowerCase(); // Normalize the input for command checks
+
+    if (matchDate) {
+      const now = new Date();
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const dateResponse = `Current date is ${date} and the time is ${time}.`;
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", type: "text", content: dateResponse },
+      ]);
+      speakText(dateResponse);
+    } else if (
+      command.includes("tell me the latest news") ||
+      command.includes("tell me  latest news")
+    ) {
+      const newsArticles = navigate("/news");
+      speakText(`opening latest news sir: ${newsArticles}`);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          type: "text",
+          content: `Here are the latest news articles about :`,
+        },
+        { sender: "ai", type: "news", content: newsArticles }, // Send the articles as a message
+      ]);
+    } else if (command.includes("open ")) {
+      const appName = command.split("open ")[1].trim();
+
+      const apps = {
+        notepad: "C:\\Windows\\system32\\notepad.exe",
+        calculator: "C:\\Windows\\system32\\calc.exe",
+        // Add more apps if needed
+      };
+
+      if (apps[appName]) {
+        // For local applications, you can't open them directly in the browser
+        speakText(`Opening ${appName}, sir...`);
+      } else if (command.includes("song")) {
+        const songName = appName;
+        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+          songName
+        )}`;
+        window.open(searchUrl, "_blank");
+        speakText(`Opening ${songName} on YouTube, sir...`);
+      } else {
+        let site = appName;
+
+        // Constructing the URL
+        if (!site.startsWith("http")) {
+          if (!site.startsWith("www.")) {
+            site = "www." + site;
+          }
+          site += ".com";
+        }
+        window.open("http://" + site, "_blank");
+        speakText(`Opening ${site.split(".")[1]}, sir...`);
+      }
+    } else {
+      // Check if the input contains a request for weather in a specific city
+      const match = input.match(cityRegex);
+      setLoading(true);
+      if (match && match[2]) {
+        const city = match[2].trim();
+        await fetchWeather(city);
+        setLoading(false);
+      } else {
+        const aiResponse = await fetchAIResponse(input);
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", type: "text", content: aiResponse },
+        ]);
+      }
+    }
+
+    setInput(""); // Clear input after processing
+    setIsSpeechInput(false); // Reset speech input flag after sending
+  };
+
+  useEffect(() => {
+    if (isSpeechInput && input.trim() !== "") {
+      handleSend(); // Automatically sends the message when input is updated by speech
+    }
+  }, [input, isSpeechInput]);
+
+  const handleTyping = () => {
+    setIsTyping(true);
+    setTimeout(() => setIsTyping(false), 1000);
+  };
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const speakText = (text) => {
+    if ("speechSynthesis" in window) {
+      if (speechRef.current) {
+        window.speechSynthesis.cancel();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = language;
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+
+      speechRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Your browser does not support speech synthesis.");
+    }
+  };
+
+  const stopSpeaking = () => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  const renderMessageContent = (message) => {
+    switch (message.type) {
+      case "text":
+        return message.sender === "ai"
+          ? renderFormattedContent(message.content)
+          : message.content;
+
+      default:
+        return message.content;
+    }
+  };
+
+  const renderFormattedContent = (content) => {
+    const formattedContent = content.split("\n").map((line, index) => {
+      if (line.startsWith("**")) {
+        const content = line.replace(/\*\*/g, "");
+        return (
+          <p key={index} className="text-bold-red text-xl">
+            {content}
+          </p>
+        );
+      } else if (line.startsWith("*")) {
+        const content = line.replace(/\*/g, "");
+        return (
+          <li key={index} className="text-black text-xl">
+            {content}
+          </li>
+        );
+      } else if (line.match(/^# /)) {
+        return (
+          <h2 key={index} className="text-lg font-semibold text-green-600">
+            {line.replace(/^# /, "")}
+          </h2>
+        );
+      } else if (line.match(/^## /)) {
+        return (
+          <h3 key={index} className="text-md font-semibold text-yellow-600">
+            {line.replace(/^## /, "")}
+          </h3>
+        );
+      } else if (line.startsWith("!")) {
+        return (
+          <p key={index} className="text-bold-blue">
+            {line.replace(/^!/, "")}
+          </p>
+        );
+      } else {
+        return (
+          <p key={index} className="text-gray-900">
+            {line}
+          </p>
+        );
+      }
+    });
+
+    return <div className="space-y-2">{formattedContent}</div>;
+  };
+
+  useEffect(() => {
+    Prism.highlightAll();
+  }, [messages]);
+
+  const clearChatFunction = () => {
+    localStorage.removeItem("messages");
+    setMessages([]); // Clear chat state
+
+    // Reload the page
+    window.location.reload();
+  };
+
+  return (
+    <div className="chat-container max-w-screen-sm mx-auto p-4">
+      <div
+        ref={chatContainerRef}
+        className="chat-messages h-[70vh] overflow-y-auto mb-2"
+      >
+        {showDefaultMessage && (
+          <div className="mt-[250px] p-2 rounded bg-gradient-to-r from-maroon-600 to-maroon-900 text-white">
+            <h1 className="text-5xl font-bold text-white drop-shadow-lg">
+              Hello users, ask anything to me.{" "}
+              <span className="text-pink-700 font-extrabold drop-shadow-lg animate-pulse text-5xl">
+                I am your AI Assistant.
+              </span>
+            </h1>
+          </div>
+        )}
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`p-2 rounded ${
+              msg.sender === "user"
+                ? "bg-green-700 text-white self-end"
+                : "bg-gray-300"
+            }`}
+          >
+            {renderMessageContent(msg)}
+          </div>
+        ))}
+        {loading && (
+          <div className="flex items-center justify-center p-2">
+            <AiOutlineLoading3Quarters
+              className="animate-spin text-red-400 text-2xl font-bold"
+              size={24}
+            />
+          </div>
+        )}
+        {isTyping && <div className="p-2 text-sm text-gray-500">Typing...</div>}
+        <div ref={bottomRef} />
+      </div>
+
+      <div className="flex flex-wrap gap-2 p-2">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="p-1 rounded border border-gray-300"
+        >
+          <option value="en-IN">English (India)</option>
+          <option value="hi-IN">Hindi (India)</option>
+        </select>
+        <button
+          onClick={startListening}
+          className={`p-2 ${
+            isFlashing ? "bg-black animate-pulse" : "bg-blue-500"
+          } rounded text-white`}
+        >
+          {isFlashing ? "Listening..." : "🎤"}
+        </button>
+        <button
+          onClick={stopListening}
+          className="p-2 bg-red-500 hover:bg-green-600 rounded text-white"
+        >
+          🔲
+        </button>
+        <button
+          onClick={handleSend}
+          className="p-2 bg-green-500 rounded text-white hover:bg-red-950"
+        >
+          Send
+        </button>
+        <button
+          onClick={stopSpeaking}
+          className={`p-2 ${
+            isSpeaking
+              ? "bg-yellow-300 hover:bg-green-900 animate-pulse"
+              : "bg-red-800"
+          } rounded text-white`}
+        >
+          {isSpeaking ? "Stop AI Voice" : "Speak"}
+        </button>
+        <button
+          className="bg-lime-700 px-4 py-2 border-4 rounded-2xl hover:bg-emerald-600"
+          onClick={clearChatFunction}
+        >
+          Clear chat
+        </button>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value);
+            setIsSpeechInput(false); // Ensure that typing doesn't trigger speech input handling
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSend();
+            }
+          }}
+          placeholder="Type a message..."
+          className="p-2 border rounded w-full"
+        />
+      </div>
+    </div>
+  );
+}
+
+export default Chat;

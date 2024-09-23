@@ -1,0 +1,23 @@
+@keyframes slideBackground {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+.background-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:url("https://tse3.mm.bing.net/th?id=OIG2.EglZn8BpHTzAl6uB68za&pid=ImgGn");
+ 
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 0% 0%, 100% 100%;
+  animation: slideBackground 25s ease-in-out infinite;
+  z-index: -1; /* Ensures the background stays behind other content */
+}

@@ -1,0 +1,86 @@
+/* CSS for flashing effect from green to red */
+@keyframes flash {
+  0% { background-color: #34d399; } /* Green */
+  50% { background-color: #ef4444; } /* Red */
+  100% { background-color: #34d399; } /* Green */
+}
+
+.flashing {
+  animation: flash 1s infinite;
+}
+
+
+/* chat.css */
+
+/* Ensure the chat container scrolls independently */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Ensure the chat messages area scrolls independently */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Style for the fixed input box */
+.chat-input-container {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  background-color: #fff;
+  position: relative;
+}
+
+.chat-input {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  resize: none;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.send-button,
+.mic-button,
+.stop-button {
+  margin-left: 8px;
+}
+
+@media (max-width: 600px) {
+  .chat-input-container {
+    flex-direction: column; /* Stack buttons vertically on small screens */
+    align-items: flex-start; /* Align buttons to the start of the container */
+  }
+
+  .chat-input-container button {
+    width: 100%; /* Make buttons full width */
+    margin-bottom: 8px; /* Add margin between buttons */
+  }
+
+  .chat-input-container textarea {
+    font-size: 16px; /* Adjust font size for better readability */
+    padding: 1rem;
+    width: 100%; /* Adjust padding for better input sizing */
+  }
+}
+
+
+
+
+
+
+/* Optional: Add responsive design if needed */
+/* @media (max-width: 600px) {
+  .chat-input {
+    font-size: 14px;
+  }
+
+
+
+} */
+
