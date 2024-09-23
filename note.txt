@@ -3,10 +3,6 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 import "./chat.css";
-import { BsMic } from "react-icons/bs";
-import { FaStop } from "react-icons/fa";
-import { FcSpeaker } from "react-icons/fc";
-import { IoMdSend } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 
 function Chat() {
@@ -252,7 +248,7 @@ function Chat() {
 
     // Check for date/time request
     const dateRegex =
-      /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|what is the day today|tell me the time)/i;
+      /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
 
     const matchDate = input.match(dateRegex);
     const command = input.toLowerCase(); // Normalize the input for command checks
@@ -285,7 +281,7 @@ function Chat() {
         { sender: "ai", type: "text", content: dateResponse },
       ]);
       speakText(dateResponse);
-    } else if (command.includes("generate an image")) {
+    } else if (command.includes("generate image")) {
       // Extract the prompt for image generation
       const prompt = command.replace("generate image", "").trim();
       const width = 512; // Example width
@@ -376,7 +372,7 @@ function Chat() {
     return messages.map((msg, index) => {
       const messageClass = `p-2 rounded-xl ${
         msg.sender === "user"
-          ? "bg-green-900 text-white self-end"
+          ? "bg-green-700 text-white self-end"
           : "bg-gray-800 text-white"
       } mb-2`;
 
@@ -534,26 +530,6 @@ function Chat() {
     Prism.highlightAll();
   }, [messages]);
 
-  ////////////////////////////////////////////////////////////////////////
-  // Welcome message when the component mounts
-  useEffect(() => {
-    const currentHour = new Date().getHours();
-    let greeting = "";
-
-    if (currentHour < 12) {
-      greeting = "Good morning";
-    } else if (currentHour < 18) {
-      greeting = "Good afternoon";
-    } else {
-      greeting = "Good evening";
-    }
-
-    const message = `${greeting}, I am your AI Assistant. You can ask me to do things like generating images or fetching weather updates. For example, you can say, "Generate an image of a baby" or "What's the temperature in Patna?" You can either tap the mic icon or type your question in the input box. I'm here to help, and I'll be glad to assist you!`;
-
-    // Pass the message to speakText
-    speakText(message);
-  }, []);
-
   const clearChatFunction = () => {
     localStorage.removeItem("messages");
     setMessages([]); // Clear chat state
@@ -561,7 +537,7 @@ function Chat() {
     // Reload the page
     window.location.reload();
   };
-  const send = "Send";
+
   return (
     <div className="chat-container max-w-screen-sm mx-auto p-4">
       <div
@@ -605,39 +581,33 @@ function Chat() {
         </select>
         <button
           onClick={startListening}
-          className={`p-2 hover:bg-red-800${
-            isFlashing ? "bg-black animate-pulse" : ""
+          className={`p-2 ${
+            isFlashing ? "bg-black animate-pulse" : "bg-blue-500"
           } rounded text-white`}
         >
-          {isFlashing ? (
-            <p className="text-xl bg-blue-800 p-2 rounded-lg">Listening...</p>
-          ) : (
-            <BsMic color="green" fontSize={30} />
-          )}
+          {isFlashing ? "Listening..." : "🎤"}
         </button>
         <button
           onClick={stopListening}
-          className="p-2  hover:bg-green-600 rounded text-white"
+          className="p-2 bg-red-500 hover:bg-green-600 rounded text-white"
         >
-          {!isFlashing ? (
-            <FaStop color="red" fontSize={30} />
-          ) : (
-            <p className="text-xl bg-red-800 p-2 rounded-lg">stop mic...</p>
-          )}
+          🔲
         </button>
         <button
           onClick={handleSend}
-          className={`p-2  rounded text-white hover:bg-red-950${send}`}
+          className="p-2 bg-green-500 rounded text-white hover:bg-red-950"
         >
-          <IoMdSend fontSize={30} />
+          Send
         </button>
         <button
           onClick={stopSpeaking}
           className={`p-2 ${
-            isSpeaking ? "bg-yellow-300 hover:bg-green-900 animate-pulse" : ""
+            isSpeaking
+              ? "bg-yellow-300 hover:bg-green-900 animate-pulse"
+              : "bg-red-800"
           } rounded text-white`}
         >
-          {isSpeaking ? "Stop AI Voice" : <FcSpeaker fontSize={30} />}
+          {isSpeaking ? "Stop AI Voice" : "Speak"}
         </button>
         <button
           className="bg-lime-700 px-4 py-2 border-4 rounded-2xl hover:bg-emerald-600"
