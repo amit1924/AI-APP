@@ -19,7 +19,8 @@ const News = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch news articles");
+          const errorMsg = `Error ${response.status}: ${response.statusText}`;
+          throw new Error(errorMsg);
         }
 
         const data = await response.json();
