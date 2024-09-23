@@ -237,225 +237,6 @@ function Chat() {
   const cityRegex =
     /(weather in|weather of|temperature in|temperature of)\s+([\w\s]+)/i;
 
-  // const handleSend = async () => {
-  //   if (input.trim() === "") return;
-
-  //   setMessages((prev) => [
-  //     ...prev,
-  //     { sender: "user", type: "text", content: input },
-  //   ]);
-
-  //   // // Check if the input contains a request for weather in a specific city
-  //   // const match = input.match(cityRegex);
-  //   // setLoading(true);
-
-  //   // if (match && match[2]) {
-  //   //   // Access the second capturing group for the city name
-  //   //   const city = match[2].trim(); // Get the city name
-  //   //   await fetchWeather(city);
-  //   //   setLoading(false);
-  //   //   // Fetch weather for the extracted city
-  //   // } else {
-  //   //   const aiResponse = await fetchAIResponse(input);
-  //   //   setMessages((prev) => [
-  //   //     ...prev,
-  //   //     { sender: "ai", type: "text", content: aiResponse },
-  //   //   ]);
-  //   // }
-
-  //   // setInput("");
-  //   // setIsSpeechInput(false); // Reset speech input flag after sending
-
-  //   //////////////////////////////
-
-  //   // Check for date/time request
-  //   const dateRegex =
-  //     /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
-
-  //   const matchDate = input.match(dateRegex);
-
-  //   if (matchDate) {
-  //     const now = new Date();
-  //     const date = now.toLocaleDateString(); // e.g., "9/23/2024"
-  //     const time = now.toLocaleTimeString([], {
-  //       hour: "2-digit",
-  //       minute: "2-digit",
-  //     }); // e.g., "14:30"
-
-  //     const dateResponse = `Current date is ${date} and the time is ${time}.`;
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       { sender: "ai", type: "text", content: dateResponse },
-  //     ]);
-  //     speakText(dateResponse);
-  //   } else {
-  //     // Check if the input contains a request for weather in a specific city
-  //     const match = input.match(cityRegex);
-
-  //     if (match && match[2]) {
-  //       const city = match[2].trim(); // Get the city name
-  //       await fetchWeather(city);
-  //     } else {
-  //       const aiResponse = await fetchAIResponse(input);
-  //       setMessages((prev) => [
-  //         ...prev,
-  //         { sender: "ai", type: "text", content: aiResponse },
-  //       ]);
-  //     }
-  //   }
-
-  //   setLoading(false);
-  //   setInput("");
-  //   setIsSpeechInput(false); // Reset speech input flag after sending
-  // };
-
-  ///////////////////////////////////////////
-  // const handleSend = async () => {
-  //   if (input.trim() === "") return;
-
-  //   setMessages((prev) => [
-  //     ...prev,
-  //     { sender: "user", type: "text", content: input },
-  //   ]);
-
-  //   // Check for date/time request
-  //   const dateRegex =
-  //     /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
-
-  //   const matchDate = input.match(dateRegex);
-
-  //   if (matchDate) {
-  //     const now = new Date();
-  //     const date = now.toLocaleDateString();
-  //     const time = now.toLocaleTimeString([], {
-  //       hour: "2-digit",
-  //       minute: "2-digit",
-  //     });
-
-  //     const dateResponse = `Current date is ${date} and the time is ${time}.`;
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       { sender: "ai", type: "text", content: dateResponse },
-  //     ]);
-  //     speakText(dateResponse);
-  //   } else {
-  //     // Check if the input contains a URL
-  //     const urlRegex = /https?:\/\/[^\s]+/i;
-  //     const urlMatch = input.match(urlRegex);
-
-  //     if (urlMatch) {
-  //       const website = urlMatch[0];
-  //       const openingMessage = `Opening website, sir.`;
-  //       setMessages((prev) => [
-  //         ...prev,
-  //         { sender: "ai", type: "text", content: openingMessage },
-  //       ]);
-  //       speakText(openingMessage);
-  //       window.open(website, "_blank"); // Open the URL in a new tab
-  //     } else {
-  //       // Check if the input contains a request for weather in a specific city
-  //       const match = input.match(cityRegex);
-  //       if (match && match[2]) {
-  //         const city = match[2].trim();
-  //         await fetchWeather(city);
-  //       } else {
-  //         const aiResponse = await fetchAIResponse(input);
-  //         setMessages((prev) => [
-  //           ...prev,
-  //           { sender: "ai", type: "text", content: aiResponse },
-  //         ]);
-  //       }
-  //     }
-  //   }
-
-  //   setLoading(false);
-  //   setInput("");
-  //   setIsSpeechInput(false);
-  // };
-
-  /////////////////////////////////////////////////////////////////
-  // const handleSend = async () => {
-  //   if (input.trim() === "") return;
-
-  //   setMessages((prev) => [
-  //     ...prev,
-  //     { sender: "user", type: "text", content: input },
-  //   ]);
-
-  //   // Check for date/time request
-  //   const dateRegex =
-  //     /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|tell me the time)/i;
-
-  //   const matchDate = input.match(dateRegex);
-  //   const command = input.toLowerCase(); // Normalize the input for command checks
-
-  //   if (matchDate) {
-  //     const now = new Date();
-  //     const date = now.toLocaleDateString();
-  //     const time = now.toLocaleTimeString([], {
-  //       hour: "2-digit",
-  //       minute: "2-digit",
-  //     });
-
-  //     const dateResponse = `Current date is ${date} and the time is ${time}.`;
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       { sender: "ai", type: "text", content: dateResponse },
-  //     ]);
-  //     speakText(dateResponse);
-  //   } else if (command.includes("open ")) {
-  //     const appName = command.split("open ")[1].trim();
-
-  //     // Check for specific apps if you want (similar to your Python apps dictionary)
-  //     const apps = {
-  //       notepad: "C:\\Windows\\system32\\notepad.exe",
-  //       calculator: "C:\\Windows\\system32\\calc.exe",
-  //       // Add more apps if needed
-  //     };
-
-  //     if (apps[appName]) {
-  //       // For local applications, you can't open them directly in the browser
-  //       // You might need to run a backend service for that
-  //       speakText(`Opening ${appName}, sir...`);
-  //     } else if (command.includes("song")) {
-  //       const songName = appName;
-  //       const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-  //         songName
-  //       )}`;
-  //       window.open(searchUrl, "_blank");
-  //       speakText(`Opening ${songName} on YouTube, sir...`);
-  //     } else {
-  //       let site = appName;
-
-  //       // Constructing the URL
-  //       if (!site.startsWith("http")) {
-  //         if (!site.startsWith("www.")) {
-  //           site = "www." + site;
-  //         }
-  //         site += ".com";
-  //       }
-  //       window.open("http://" + site, "_blank");
-  //       speakText(`Opening ${site.split(".")[1]}, sir...`);
-  //     }
-  //   } else {
-  //     // Check if the input contains a request for weather in a specific city
-  //     const match = input.match(cityRegex);
-  //     if (match && match[2]) {
-  //       const city = match[2].trim();
-  //       await fetchWeather(city);
-  //     } else {
-  //       const aiResponse = await fetchAIResponse(input);
-  //       setMessages((prev) => [
-  //         ...prev,
-  //         { sender: "ai", type: "text", content: aiResponse },
-  //       ]);
-  //     }
-  //   }
-
-  //   setInput(""); // Clear input after processing
-  //   setIsSpeechInput(false); // Reset speech input flag after sending
-  // };
-
   ///////////////////////////fetch news /////////////////////////
   const handleSend = async () => {
     if (input.trim() === "") return;
@@ -474,18 +255,51 @@ function Chat() {
 
     if (matchDate) {
       const now = new Date();
+
+      const dayIndex = now.getDay();
+      const daysOfWeek = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      const dayName = daysOfWeek[dayIndex];
+
       const date = now.toLocaleDateString();
+      console.log(`date:${date}`);
       const time = now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
 
-      const dateResponse = `Current date is ${date} and the time is ${time}.`;
+      const dateResponse = `Today is ${dayName} and  date is ${date} and the time is ${time}.`;
       setMessages((prev) => [
         ...prev,
         { sender: "ai", type: "text", content: dateResponse },
       ]);
       speakText(dateResponse);
+    } else if (command.includes("generate image")) {
+      // Extract the prompt for image generation
+      const prompt = command.replace("generate image", "").trim();
+      const width = 512; // Example width
+      const height = 512; // Example height
+      const seed = Math.floor(Math.random() * 1000); // Random seed
+      const model = "default"; // Example model
+
+      // Generate the image URL
+      const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(
+        prompt
+      )}?width=${width}&height=${height}&seed=${seed}&model=${model}`;
+
+      // Add the image to the messages
+      setMessages((prev) => [
+        ...prev,
+        { sender: "ai", type: "image", content: imageUrl },
+      ]);
+      speakText(`Generating image sir please wait...`);
     } else if (
       command.includes("tell me the latest news") ||
       command.includes("tell me  latest news")
@@ -552,6 +366,58 @@ function Chat() {
 
     setInput(""); // Clear input after processing
     setIsSpeechInput(false); // Reset speech input flag after sending
+  };
+
+  const renderMessages = () => {
+    return messages.map((msg, index) => {
+      const messageClass = `p-2 rounded-xl ${
+        msg.sender === "user"
+          ? "bg-green-700 text-white self-end"
+          : "bg-gray-800 text-white"
+      } mb-2`;
+
+      if (msg.type === "image") {
+        return (
+          <div key={index} className={messageClass}>
+            <a href={msg.content} download={`image-${index}.png`}>
+              <img
+                src={msg.content}
+                alt="Generated"
+                className="md:w-[620px] md:h-[620px] w-[440px] h-[440px]"
+              />
+            </a>
+          </div>
+        );
+      } else {
+        // Split the message into lines
+        const lines = msg.content
+          .split("\n")
+          .filter((line) => line.trim() !== "");
+        const headline = lines[0]; // First line as headline
+        const bulletPoints = lines.slice(1); // Remaining lines as bullet points
+
+        return (
+          <div key={index} className={messageClass}>
+            <h3 className="text-xl font-bold text-blue-500 text-center">
+              {headline.replace(/\*/g, "")}
+            </h3>
+            <br />
+            <ul className="list-disc pl-5">
+              {bulletPoints.map((point, pointIndex) => (
+                <li
+                  key={pointIndex}
+                  className={`text-lg ${
+                    msg.sender === "user" ? "font-normal" : "font-normal"
+                  }`}
+                >
+                  {point.replace(/\*/g, "")}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      }
+    });
   };
 
   useEffect(() => {
@@ -688,18 +554,10 @@ function Chat() {
             </h1>
           </div>
         )}
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`p-2 rounded ${
-              msg.sender === "user"
-                ? "bg-green-700 text-white self-end"
-                : "bg-gray-300"
-            }`}
-          >
-            {renderMessageContent(msg)}
-          </div>
-        ))}
+
+        {/* Call the renderMessages function here */}
+        {renderMessages()}
+
         {loading && (
           <div className="flex items-center justify-center p-2">
             <AiOutlineLoading3Quarters
