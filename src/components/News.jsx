@@ -15,7 +15,13 @@ const News = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=50&page=${page}&apiKey=${API_KEY}`
+          `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=50&page=${page}&apiKey=${API_KEY}`,
+          {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            },
+          }
         );
 
         if (!response.ok) {
