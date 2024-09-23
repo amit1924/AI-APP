@@ -490,7 +490,7 @@ function Chat() {
       command.includes("tell me the latest news") ||
       command.includes("tell me  latest news")
     ) {
-      const newsArticles = navigate("/news");
+      const newsArticles = navigate("/gnews");
       speakText(`opening latest news sir: ${newsArticles}`);
       setMessages((prev) => [
         ...prev,
