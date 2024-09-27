@@ -8,6 +8,7 @@ import { FaStop } from "react-icons/fa";
 import { FcSpeaker } from "react-icons/fc";
 import { IoMdSend } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import GoogleSearch from "./GoogleSearch";
 
 function Chat() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ function Chat() {
   const [humidity, setHumidity] = useState("");
   const [wind, setWind] = useState("");
   const [city, setCity] = useState("");
+  const [isImageFLash, setIsImageFLash] = useState(false);
 
   const API_URL =
     "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
@@ -151,6 +153,14 @@ function Chat() {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // useEffect(() => {
+  //   setIsImageFLash(true);
+
+  //   setTimeout(() => {
+  //     setIsImageFLash(false);
+  //   }, 3000);
+  // }, [isImageFLash]);
 
   const fetchAIResponse = async (message) => {
     const apiKey = import.meta.env.VITE_API_KEY;
@@ -288,8 +298,8 @@ function Chat() {
     } else if (command.includes("generate an image")) {
       // Extract the prompt for image generation
       const prompt = command.replace("generate image", "").trim();
-      const width = 512; // Example width
-      const height = 512; // Example height
+      const width = 512;
+      const height = 512;
       const seed = Math.floor(Math.random() * 1000); // Random seed
       const model = "default"; // Example model
 
@@ -303,6 +313,10 @@ function Chat() {
         ...prev,
         { sender: "ai", type: "image", content: imageUrl },
       ]);
+      setIsImageFLash(true);
+      setTimeout(() => {
+        setIsImageFLash(false);
+      }, 4000);
       speakText(`Generating image sir please wait...`);
     } else if (
       command.includes("tell me the latest news") ||
@@ -319,6 +333,23 @@ function Chat() {
         },
         { sender: "ai", type: "news", content: newsArticles }, // Send the articles as a message
       ]);
+    } else if (command.startsWith("search for")) {
+      const searchQuery = command.slice(10).trim();
+
+      // Log the extracted query for debugging
+      console.log("Search query extracted:", searchQuery);
+
+      if (searchQuery) {
+        const url = `https://www.google.com/search?q=${encodeURIComponent(
+          searchQuery
+        )}`;
+        console.log(`Opening Google search URL: ${url}`); // Debug log
+        window.open(url, "_blank"); // Ensure it's opening in a new tab
+        speakText(`Opening ${searchQuery} on Google, sir...`);
+      } else {
+        console.log("No search query found.");
+        speakText(`Please specify what you want to search for.`);
+      }
     } else if (command.includes("open ")) {
       const appName = command.split("open ")[1].trim();
 
@@ -382,7 +413,14 @@ function Chat() {
 
       if (msg.type === "image") {
         return (
-          <div key={index} className={messageClass}>
+          <div
+            key={index}
+            className={`${messageClass} ${
+              isImageFLash
+                ? "transition-all duration-200 translate-y-full bg-violet-950 animate-pulse"
+                : "animate-none"
+            } `}
+          >
             <a href={msg.content} download={`image-${index}.png`}>
               <img
                 src={msg.content}
@@ -566,7 +604,7 @@ function Chat() {
     <div className="chat-container max-w-screen-sm mx-auto p-4">
       <div
         ref={chatContainerRef}
-        className="chat-messages h-[70vh] overflow-y-auto mb-2"
+        className="chat-messages h-[70vh] overflow-y-auto mb-2 overflow-x-hidden"
       >
         {showDefaultMessage && (
           <div className="mt-[250px] p-2 rounded bg-gradient-to-r from-maroon-600 to-maroon-900 text-white">
@@ -586,7 +624,7 @@ function Chat() {
           <div className="flex items-center justify-center p-2">
             <AiOutlineLoading3Quarters
               className="animate-spin text-red-400 text-2xl font-bold"
-              size={24}
+              size={44}
             />
           </div>
         )}

@@ -56,7 +56,7 @@ const GlobalNews = () => {
         className="absolute right-3 top-3  bg-orange-700 p-3 rounded-xl
         "
       >
-        <Link to="/gnews">Back To AI</Link>
+        <Link to="/">Back To AI</Link>
       </div>
 
       <h2 className="text-2xl font-bold mb-4">Global News</h2>
