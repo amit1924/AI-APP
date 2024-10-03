@@ -251,6 +251,8 @@ function Chat() {
   const cityRegex =
     /(weather in|weather of|temperature in|temperature of)\s+([\w\s]+)/i;
 
+  ///Timer Notification
+
   ///////////////////////////fetch news /////////////////////////
   const handleSend = async () => {
     if (input.trim() === "") return;
@@ -333,7 +335,45 @@ function Chat() {
         },
         { sender: "ai", type: "news", content: newsArticles }, // Send the articles as a message
       ]);
-    } else if (command.startsWith("search for")) {
+    } else if (command.startsWith("search location")) {
+      const location = command.slice(15).trim();
+      if (location) {
+        const mapsUrl = `https://www.google.com/maps/place/${encodeURIComponent(
+          location
+        )}`;
+
+        window.open(mapsUrl, "_blank");
+
+        speakText(`Opening google maps for: ${location}`);
+      } else {
+        speakText(`Please specify a location to search for`);
+      }
+      ////////////////////////////////
+      // spotify
+    } else if (command.includes("play song of")) {
+      const songName = command.replace("play song of", "").trim();
+      const searchUrl = `https://open.spotify.com/search/${encodeURIComponent(
+        songName
+      )}`;
+      window.open(searchUrl, "_blank");
+      speakText(`Playing ${songName} on Spotify, sir...`);
+    }
+    ///////////////////////////////
+    // search images
+    else if (command.startsWith("search image of")) {
+      const searchQuery = command.replace("search image of", "").trim();
+      const imageUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(
+        searchQuery
+      )}`;
+      window.open(imageUrl, "_blank");
+      speakText(`Searching images for ${searchQuery}, sir...`);
+    }
+    //////////////////////////
+    // Set timer
+
+    ////////////////
+    // Search on Google
+    else if (command.startsWith("search for")) {
       const searchQuery = command.slice(10).trim();
 
       // Log the extracted query for debugging
