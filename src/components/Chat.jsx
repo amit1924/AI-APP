@@ -215,6 +215,7 @@ function Chat() {
       );
 
       const data = await response.json();
+      console.log(`data: ${data}`);
       if (
         data.candidates &&
         data.candidates.length > 0 &&
@@ -223,6 +224,7 @@ function Chat() {
         data.candidates[0].content.parts.length > 0
       ) {
         const aiResponse = data.candidates[0].content.parts[0].text;
+        console.log(`aiResponse: ${aiResponse}`);
         const cleanedResponse = sanitizeText(aiResponse);
         speakText(cleanedResponse);
         setShowDefaultMessage(false);
@@ -400,7 +402,7 @@ function Chat() {
       };
 
       if (apps[appName]) {
-        // For local applications, you can't open them directly in the browser
+        // For local applications,
         speakText(`Opening ${appName}, sir...`);
       } else if (command.includes("song")) {
         const songName = appName;

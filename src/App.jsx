@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Chat from "./components/Chat";
 import News from "./components/News";
-import "./App.css"; // Import the CSS file for background animation
+import "./App.css";
 import GlobalNews from "./components/GlobalNews";
 
 const App = () => {
@@ -14,8 +14,8 @@ const App = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex items-center justify-center relative">
-        <div className="background-animation"></div>
+      <div className=" background-animation">
+        <div className=""></div>
         <Routes>
           <Route path="/" element={<Chat />} />
           <Route path="/news" element={<News />} />
