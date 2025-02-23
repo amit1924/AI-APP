@@ -9,6 +9,7 @@ import { FcSpeaker } from "react-icons/fc";
 import { IoMdSend } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 // import GoogleSearch from "./GoogleSearch";
+import { MdClearAll } from "react-icons/md";
 
 function Chat() {
   const navigate = useNavigate();
@@ -672,11 +673,11 @@ function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="flex flex-wrap gap-2 p-2">
+      <div className="flex flex-wrap gap-1 md:gap-4 p-0">
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          className="p-1 rounded border border-gray-300"
+          className="p-1 rounded-full"
         >
           <option value="en-IN">English (India)</option>
           <option value="hi-IN">Hindi (India)</option>
@@ -707,7 +708,7 @@ function Chat() {
           onClick={handleSend}
           className={`p-2  rounded text-white hover:bg-red-950${send}`}
         >
-          <IoMdSend fontSize={30} />
+          <IoMdSend fontSize={25} />
         </button>
         <button
           onClick={stopSpeaking}
@@ -721,7 +722,7 @@ function Chat() {
           className="px-4 py-2  rounded-2xl hover:bg-emerald-600"
           onClick={clearChatFunction}
         >
-          Clear chat
+          <MdClearAll className="text-2xl" />
         </button>
         <input
           type="text"
