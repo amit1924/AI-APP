@@ -8,7 +8,7 @@ import { FaStop } from "react-icons/fa";
 import { FcSpeaker } from "react-icons/fc";
 import { IoMdSend } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-import GoogleSearch from "./GoogleSearch";
+// import GoogleSearch from "./GoogleSearch";
 
 function Chat() {
   const navigate = useNavigate();
@@ -448,9 +448,7 @@ function Chat() {
   const renderMessages = () => {
     return messages.map((msg, index) => {
       const messageClass = `p-2 rounded-xl ${
-        msg.sender === "user"
-          ? "bg-green-900 text-white self-end"
-          : "bg-gray-800 text-white"
+        msg.sender === "user" ? "text-white self-end" : "text-white text-lg"
       } mb-2`;
 
       if (msg.type === "image") {
@@ -482,7 +480,7 @@ function Chat() {
 
         return (
           <div key={index} className={messageClass}>
-            <h3 className="text-xl font-bold text-blue-500 text-center">
+            <h3 className="text-xl font-bold text-purple-600 text-center">
               {headline.replace(/\*/g, "")}
             </h3>
             <br />
@@ -491,7 +489,7 @@ function Chat() {
                 <li
                   key={pointIndex}
                   className={`text-lg ${
-                    msg.sender === "user" ? "font-normal" : "font-normal"
+                    msg.sender === "user" ? "font-bold" : "font-normal"
                   }`}
                 >
                   {point.replace(/\*/g, "")}
@@ -643,7 +641,7 @@ function Chat() {
   };
   const send = "Send";
   return (
-    <div className="chat-container max-w-screen-sm mx-auto p-4">
+    <div className="chat-container max-w-screen-md mx-auto p-4">
       <div
         ref={chatContainerRef}
         className="chat-messages h-[70vh] overflow-y-auto mb-2 overflow-x-hidden"
@@ -690,7 +688,7 @@ function Chat() {
           } rounded text-white`}
         >
           {isFlashing ? (
-            <p className="text-xl bg-blue-800 p-2 rounded-lg">Listening...</p>
+            <p className="text-lg p-2 rounded-lg">Listening...</p>
           ) : (
             <BsMic color="green" fontSize={30} />
           )}
@@ -702,7 +700,7 @@ function Chat() {
           {!isFlashing ? (
             <FaStop color="red" fontSize={30} />
           ) : (
-            <p className="text-xl bg-red-800 p-2 rounded-lg">stop mic...</p>
+            <p className="text-xl  p-2 rounded-lg animate spin">stop mic...</p>
           )}
         </button>
         <button
@@ -714,13 +712,13 @@ function Chat() {
         <button
           onClick={stopSpeaking}
           className={`p-2 ${
-            isSpeaking ? "bg-yellow-300 hover:bg-green-900 animate-pulse" : ""
+            isSpeaking ? " hover:bg-green-900 animate-pulse" : ""
           } rounded text-white`}
         >
           {isSpeaking ? "Stop AI Voice" : <FcSpeaker fontSize={30} />}
         </button>
         <button
-          className="bg-lime-700 px-4 py-2 border-4 rounded-2xl hover:bg-emerald-600"
+          className="px-4 py-2  rounded-2xl hover:bg-emerald-600"
           onClick={clearChatFunction}
         >
           Clear chat
