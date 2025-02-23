@@ -1,4 +1,4 @@
-/* CSS for flashing effect from green to red */
+CSS for flashing effect from green to red
 @keyframes flash {
   0% { background-color: #34d399; } /* Green */
   50% { background-color: #ef4444; } /* Red */

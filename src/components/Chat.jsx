@@ -627,7 +627,7 @@ function Chat() {
       greeting = "Good evening";
     }
 
-    const message = `${greeting}, I am your AI Assistant. You can ask me to do things like generating images or fetching weather updates. For example, you can say, "Generate an image of a baby" or "What's the temperature in Patna?" You can either tap the mic icon or type your question in the input box. I'm here to help, and I'll be glad to assist you!`;
+    const message = `${greeting}, I am your AI Assistant. I can generate image and can answer about your all queries`;
 
     // Pass the message to speakText
     speakText(message);
@@ -677,14 +677,19 @@ function Chat() {
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          className="p-1 rounded-full"
+          className="p-1 rounded-full bg-gray-900 text-white  focus:outline-none focus:ring-2 focus:ring-gray-700 focus:bg-gray-800 focus:text-white transition-colors"
         >
-          <option value="en-IN">English (India)</option>
-          <option value="hi-IN">Hindi (India)</option>
+          <option value="en-IN" className="bg-white text-black">
+            English (India)
+          </option>
+          <option value="hi-IN" className="bg-white text-black">
+            Hindi (India)
+          </option>
         </select>
+
         <button
           onClick={startListening}
-          className={`p-2 hover:bg-red-800${
+          className={`p-2 hover:bg-red-900 rounded-full${
             isFlashing ? "bg-black animate-pulse" : ""
           } rounded text-white`}
         >
@@ -722,7 +727,7 @@ function Chat() {
           className="px-4 py-2  rounded-2xl hover:bg-emerald-600"
           onClick={clearChatFunction}
         >
-          <MdClearAll className="text-2xl" />
+          <MdClearAll className="text-2xl text-white p-1 rounded-full" />
         </button>
         <input
           type="text"
@@ -737,7 +742,7 @@ function Chat() {
             }
           }}
           placeholder="Type a message..."
-          className="p-2 border rounded w-full"
+          className="p-2 border rounded-xl w-full bg-gray-900 text-green-600  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:text-blue-700"
         />
       </div>
     </div>

@@ -14,7 +14,7 @@ const App = () => {
 
   return (
     <Router>
-      <div className=" background-animation">
+      <div className="bg-gray-900 min-h-screen">
         <div className=""></div>
         <Routes>
           <Route path="/" element={<Chat />} />
