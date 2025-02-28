@@ -39,6 +39,11 @@ function Chat() {
   const [city, setCity] = useState("");
   const [isImageFLash, setIsImageFLash] = useState(false);
 
+  useEffect(() => {
+    const storedMessages = JSON.parse(localStorage.getItem("messages"));
+    setShowDefaultMessage(!(storedMessages && storedMessages.length > 0));
+  }, []);
+
   const API_URL =
     "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
 
@@ -258,7 +263,7 @@ function Chat() {
       ...prev,
       { sender: "user", type: "text", content: input },
     ]);
-
+    setShowDefaultMessage(false);
     // Check for date/time request
     const dateRegex =
       /(?:what is the date|what time is it|what is the time|what is the time now|tell me the date|what is the day today|tell me the time)/i;
@@ -443,7 +448,9 @@ function Chat() {
   const renderMessages = () => {
     return messages.map((msg, index) => {
       const messageClass = `p-2 rounded-xl ${
-        msg.sender === "user" ? "text-white self-end" : "text-white text-lg"
+        msg.sender === "user"
+          ? "text-purple-700 flex justify-end"
+          : "text-white text-lg"
       } mb-2`;
 
       if (msg.type === "image") {
@@ -475,7 +482,7 @@ function Chat() {
 
         return (
           <div key={index} className={messageClass}>
-            <h3 className="text-xl font-bold text-yellow-800 text-center">
+            <h3 className="text-xl font-bold text-center">
               {headline.replace(/\*/g, "")}
             </h3>
             <br />
@@ -484,7 +491,9 @@ function Chat() {
                 <li
                   key={pointIndex}
                   className={`text-lg ${
-                    msg.sender === "user" ? "font-bold" : "font-normal"
+                    msg.sender === "user"
+                      ? "font-bold text-yellow-700"
+                      : "font-normal text-white"
                   }`}
                 >
                   {point.replace(/\*/g, "")}
@@ -631,8 +640,9 @@ function Chat() {
     localStorage.removeItem("messages");
     setMessages([]); // Clear chat state
 
-    // Reload the page
-    window.location.reload();
+    if (window.location.reload()) {
+      setShowDefaultMessage(false); // Show the default message
+    }
   };
   const send = "Send";
   return (
@@ -656,11 +666,12 @@ function Chat() {
         {renderMessages()}
 
         {loading && (
-          <div className="flex items-center justify-center p-2">
-            <AiOutlineLoading3Quarters
-              className="animate-spin text-red-400 text-2xl font-bold"
-              size={44}
-            />
+          <div className="flex justify-start items-center py-3">
+            <div className="typing-indicator flex gap-1">
+              <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></span>
+              <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-100"></span>
+              <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-200"></span>
+            </div>
           </div>
         )}
         {isTyping && <div className="p-2 text-sm text-gray-500">Typing...</div>}
