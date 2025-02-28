@@ -155,14 +155,6 @@ function Chat() {
     }
   }, [messages]);
 
-  // useEffect(() => {
-  //   setIsImageFLash(true);
-
-  //   setTimeout(() => {
-  //     setIsImageFLash(false);
-  //   }, 3000);
-  // }, [isImageFLash]);
-
   const fetchAIResponse = async (message) => {
     const apiKey = import.meta.env.VITE_API_KEY;
     setLoading(true);
@@ -228,7 +220,9 @@ function Chat() {
         console.log(`aiResponse: ${aiResponse}`);
         const cleanedResponse = sanitizeText(aiResponse);
         speakText(cleanedResponse);
-        setShowDefaultMessage(false);
+        if (messages.length > 0) {
+          setShowDefaultMessage(false);
+        }
 
         // update context if the response contains a keyword
         const keywords = aiResponse.match(/([A-Z][a-z]+ [A-Z][a-z]+)/g);
@@ -481,7 +475,7 @@ function Chat() {
 
         return (
           <div key={index} className={messageClass}>
-            <h3 className="text-xl font-bold text-purple-600 text-center">
+            <h3 className="text-xl font-bold text-yellow-800 text-center">
               {headline.replace(/\*/g, "")}
             </h3>
             <br />
@@ -689,24 +683,25 @@ function Chat() {
 
         <button
           onClick={startListening}
-          className={`p-2 hover:bg-red-900 rounded-full${
+          className={`p-2  rounded-full${
             isFlashing ? "bg-black animate-pulse" : ""
           } rounded text-white`}
         >
           {isFlashing ? (
-            <p className="text-lg p-2 rounded-lg">Listening...</p>
+            <p className="text-lg p-2 rounded-lg text-green-700">
+              Listening...
+            </p>
           ) : (
             <BsMic color="green" fontSize={30} />
           )}
         </button>
-        <button
-          onClick={stopListening}
-          className="p-2  hover:bg-green-600 rounded text-white"
-        >
+        <button onClick={stopListening} className="p-2   rounded text-white">
           {!isFlashing ? (
             <FaStop color="red" fontSize={30} />
           ) : (
-            <p className="text-xl  p-2 rounded-lg animate spin">stop mic...</p>
+            <p className="text-xl  p-2 rounded-lg text-red-700 animate spin">
+              stop mic...
+            </p>
           )}
         </button>
         <button
@@ -718,7 +713,7 @@ function Chat() {
         <button
           onClick={stopSpeaking}
           className={`p-2 ${
-            isSpeaking ? " hover:bg-green-900 animate-pulse" : ""
+            isSpeaking ? " text-pink-800 animate-pulse" : ""
           } rounded text-white`}
         >
           {isSpeaking ? "Stop AI Voice" : <FcSpeaker fontSize={30} />}
