@@ -1,61 +1,61 @@
-import React, { useState, useEffect, useRef } from "react";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import Prism from "prismjs";
-import "prismjs/themes/prism-tomorrow.css";
-import "./chat.css";
-import { BsMic } from "react-icons/bs";
-import { FaStop } from "react-icons/fa";
-import { FcSpeaker } from "react-icons/fc";
-import { IoMdSend } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from 'react';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-tomorrow.css';
+import './chat.css';
+import { BsMic } from 'react-icons/bs';
+import { FaStop } from 'react-icons/fa';
+import { FcSpeaker } from 'react-icons/fc';
+import { IoMdSend } from 'react-icons/io';
+import { useNavigate } from 'react-router-dom';
 // import GoogleSearch from "./GoogleSearch";
-import { MdClearAll } from "react-icons/md";
+import { MdClearAll } from 'react-icons/md';
 
 function Chat() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState(() => {
-    const storedMessages = localStorage.getItem("messages");
+    const storedMessages = localStorage.getItem('messages');
     return storedMessages ? JSON.parse(storedMessages) : [];
   });
 
   const [context, setContext] = useState({});
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [showDefaultMessage, setShowDefaultMessage] = useState(true);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [language, setLanguage] = useState("en-IN");
+  const [language, setLanguage] = useState('en-IN');
   const [isSpeechInput, setIsSpeechInput] = useState(false); // New state for differentiating speech input
   const chatContainerRef = useRef(null);
   const bottomRef = useRef(null);
   const userScrolledUp = useRef(false);
   const recognitionRef = useRef(null);
   const speechRef = useRef(null);
-  const [weather, setWeather] = useState("");
-  const [temperature, setTemperature] = useState("");
-  const [humidity, setHumidity] = useState("");
-  const [wind, setWind] = useState("");
-  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState('');
+  const [temperature, setTemperature] = useState('');
+  const [humidity, setHumidity] = useState('');
+  const [wind, setWind] = useState('');
+  const [city, setCity] = useState('');
   const [isImageFLash, setIsImageFLash] = useState(false);
 
   useEffect(() => {
-    const storedMessages = JSON.parse(localStorage.getItem("messages"));
+    const storedMessages = JSON.parse(localStorage.getItem('messages'));
     setShowDefaultMessage(!(storedMessages && storedMessages.length > 0));
   }, []);
 
   const API_URL =
-    "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+    'https://api.openweathermap.org/data/2.5/weather?units=metric&q=';
 
   const fetchWeather = async (city) => {
     try {
       const response = await fetch(
-        `${API_URL}${city}&appid=${import.meta.env.VITE_WEATHER_API_KEY}`
+        `${API_URL}${city}&appid=${import.meta.env.VITE_WEATHER_API_KEY}`,
       );
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Weather data:", data);
+        console.log('Weather data:', data);
         const weatherDescription = data.weather[0].description;
         const temp = Math.round(data.main.temp);
         const humidity = data.main.humidity;
@@ -68,7 +68,7 @@ function Chat() {
         // Update messages with the weather info
         setMessages((prev) => [
           ...prev,
-          { sender: "ai", type: "text", content: weatherMessage },
+          { sender: 'ai', type: 'text', content: weatherMessage },
         ]);
 
         setWeather(weatherDescription);
@@ -76,19 +76,19 @@ function Chat() {
         setHumidity(`${humidity}%`);
         setWind(`${windSpeed} km/h`);
       } else {
-        console.error("Weather API response not OK:", response.status);
+        console.error('Weather API response not OK:', response.status);
         setMessages((prev) => [
           ...prev,
-          { sender: "ai", type: "text", content: "City not found" },
+          { sender: 'ai', type: 'text', content: 'City not found' },
         ]);
       }
     } catch (error) {
-      console.error("Error fetching weather:", error);
+      console.error('Error fetching weather:', error);
       setMessages((prev) => [
         ...prev,
         {
-          sender: "ai",
-          type: "text",
+          sender: 'ai',
+          type: 'text',
           content: "Sorry, I couldn't fetch the weather information.",
         },
       ]);
@@ -96,7 +96,7 @@ function Chat() {
   };
 
   useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
+    localStorage.setItem('messages', JSON.stringify(messages));
   }, [messages]);
 
   useEffect(() => {
@@ -130,7 +130,7 @@ function Chat() {
       };
 
       recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
+        console.error('Speech recognition error:', event.error);
       };
 
       recognitionRef.current.onstart = () => {
@@ -141,13 +141,13 @@ function Chat() {
         setIsFlashing(false);
       };
     } else {
-      alert("Your browser does not support speech recognition.");
+      alert('Your browser does not support speech recognition.');
     }
   }, [language]);
 
   useEffect(() => {
     return () => {
-      if ("speechSynthesis" in window) {
+      if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
       }
@@ -156,100 +156,76 @@ function Chat() {
 
   useEffect(() => {
     if (!userScrolledUp.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
   const fetchAIResponse = async (message) => {
-    const apiKey = import.meta.env.VITE_API_KEY;
     setLoading(true);
 
     try {
       // Check if the message includes weather-related keywords
       const shouldIncludeTemperature =
-        message.toLowerCase().includes("weather") ||
-        message.toLowerCase().includes("temperature");
-      message.toLowerCase().includes("weather of") ||
-        message.toLowerCase().includes("temperature of");
-      message.toLowerCase().includes("weather in") ||
-        message.toLowerCase().includes("temperature in");
+        message.toLowerCase().includes('weather') ||
+        message.toLowerCase().includes('temperature') ||
+        message.toLowerCase().includes('weather of') ||
+        message.toLowerCase().includes('temperature of') ||
+        message.toLowerCase().includes('weather in') ||
+        message.toLowerCase().includes('temperature in');
 
+      // Build the final prompt
+      let finalPrompt = message;
+
+      if (shouldIncludeTemperature) {
+        finalPrompt = `${message}. The temperature is ${temperature}.`;
+      }
+
+      // Add context if available
+      if (Object.keys(context).length > 0) {
+        finalPrompt = `${finalPrompt} Context: ${Object.values(context).join(
+          ', ',
+        )}`;
+      }
+
+      // Use the simple GET endpoint - this is the most reliable
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                // Conditionally include temperature in the message based on the user's input
-                parts: [
-                  {
-                    text: shouldIncludeTemperature
-                      ? `${message}. The temperature is ${temperature}.`
-                      : message,
-                  },
-                ],
-              },
-              // Add context to the request if available
-              ...(Object.keys(context).length > 0
-                ? [
-                    {
-                      role: "user",
-                      parts: [
-                        {
-                          text: `Context: ${Object.values(context).join(", ")}`,
-                        },
-                      ],
-                    },
-                  ]
-                : []),
-            ],
-          }),
-        }
+        `https://text.pollinations.ai/${encodeURIComponent(finalPrompt)}`,
       );
 
-      const data = await response.json();
-      console.log(`data: ${data}`);
-      if (
-        data.candidates &&
-        data.candidates.length > 0 &&
-        data.candidates[0].content &&
-        data.candidates[0].content.parts &&
-        data.candidates[0].content.parts.length > 0
-      ) {
-        const aiResponse = data.candidates[0].content.parts[0].text;
-        console.log(`aiResponse: ${aiResponse}`);
-        const cleanedResponse = sanitizeText(aiResponse);
-        speakText(cleanedResponse);
-        if (messages.length > 0) {
-          setShowDefaultMessage(false);
-        }
-
-        // update context if the response contains a keyword
-        const keywords = aiResponse.match(/([A-Z][a-z]+ [A-Z][a-z]+)/g);
-        if (keywords) {
-          setContext((prevContext) => ({ ...prevContext, ...keywords }));
-        }
-
-        return aiResponse;
-      } else {
-        return "No response from the AI.";
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const aiResponse = await response.text();
+      console.log(`aiResponse: ${aiResponse}`);
+
+      const cleanedResponse = sanitizeText(aiResponse);
+      speakText(cleanedResponse);
+
+      if (messages.length > 0) {
+        setShowDefaultMessage(false);
+      }
+
+      // Update context if the response contains keywords
+      const keywords = aiResponse.match(/([A-Z][a-z]+ [A-Z][a-z]+)/g);
+      if (keywords) {
+        setContext((prevContext) => ({ ...prevContext, ...keywords }));
+      }
+
+      return aiResponse;
     } catch (error) {
-      console.error("Error fetching AI response:", error);
-      return "An error occurred while fetching the response.";
+      console.error('Error fetching AI response:', error);
+
+      // Fallback to a simple response
+      return 'I am here to help! How can I assist you today?';
     } finally {
       setLoading(false);
     }
   };
-  const sanitizeText = (text) => {
-    return text.replace(/\*\*/g, "").replace(/\*/g, "");
-  };
 
+  const sanitizeText = (text) => {
+    return text.replace(/\*\*/g, '').replace(/\*/g, '');
+  };
   const cityRegex =
     /(weather in|weather of|temperature in|temperature of)\s+([\w\s]+)/i;
 
@@ -257,11 +233,11 @@ function Chat() {
 
   ///////////////////////////fetch news /////////////////////////
   const handleSend = async () => {
-    if (input.trim() === "") return;
+    if (input.trim() === '') return;
 
     setMessages((prev) => [
       ...prev,
-      { sender: "user", type: "text", content: input },
+      { sender: 'user', type: 'text', content: input },
     ]);
     setShowDefaultMessage(false);
     // Check for date/time request
@@ -276,46 +252,46 @@ function Chat() {
 
       const dayIndex = now.getDay();
       const daysOfWeek = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
       ];
       const dayName = daysOfWeek[dayIndex];
 
       const date = now.toLocaleDateString();
       console.log(`date:${date}`);
       const time = now.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour: '2-digit',
+        minute: '2-digit',
       });
 
       const dateResponse = `Today is ${dayName} and  date is ${date} and the time is ${time}.`;
       setMessages((prev) => [
         ...prev,
-        { sender: "ai", type: "text", content: dateResponse },
+        { sender: 'ai', type: 'text', content: dateResponse },
       ]);
       speakText(dateResponse);
-    } else if (command.includes("generate an image")) {
+    } else if (command.includes('generate an image')) {
       // Extract the prompt for image generation
-      const prompt = command.replace("generate image", "").trim();
+      const prompt = command.replace('generate image', '').trim();
       const width = 512;
       const height = 512;
       const seed = Math.floor(Math.random() * 1000); // Random seed
-      const model = "default"; // Example model
+      const model = 'default'; // Example model
 
       // Generate the image URL
       const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(
-        prompt
+        prompt,
       )}?width=${width}&height=${height}&seed=${seed}&model=${model}`;
 
       // Add the image to the messages
       setMessages((prev) => [
         ...prev,
-        { sender: "ai", type: "image", content: imageUrl },
+        { sender: 'ai', type: 'image', content: imageUrl },
       ]);
       setIsImageFLash(true);
       setTimeout(() => {
@@ -323,28 +299,28 @@ function Chat() {
       }, 4000);
       speakText(`Generating image sir please wait...`);
     } else if (
-      command.includes("tell me the latest news") ||
-      command.includes("tell me  latest news")
+      command.includes('tell me the latest news') ||
+      command.includes('tell me  latest news')
     ) {
-      const newsArticles = navigate("/gnews");
+      const newsArticles = navigate('/gnews');
       speakText(`opening latest news sir: ${newsArticles}`);
       setMessages((prev) => [
         ...prev,
         {
-          sender: "ai",
-          type: "text",
+          sender: 'ai',
+          type: 'text',
           content: `Here are the latest news articles about :`,
         },
-        { sender: "ai", type: "news", content: newsArticles }, // Send the articles as a message
+        { sender: 'ai', type: 'news', content: newsArticles }, // Send the articles as a message
       ]);
-    } else if (command.startsWith("search location")) {
+    } else if (command.startsWith('search location')) {
       const location = command.slice(15).trim();
       if (location) {
         const mapsUrl = `https://www.google.com/maps/place/${encodeURIComponent(
-          location
+          location,
         )}`;
 
-        window.open(mapsUrl, "_blank");
+        window.open(mapsUrl, '_blank');
 
         speakText(`Opening google maps for: ${location}`);
       } else {
@@ -352,22 +328,22 @@ function Chat() {
       }
       ////////////////////////////////
       // spotify
-    } else if (command.includes("play song of")) {
-      const songName = command.replace("play song of", "").trim();
+    } else if (command.includes('play song of')) {
+      const songName = command.replace('play song of', '').trim();
       const searchUrl = `https://open.spotify.com/search/${encodeURIComponent(
-        songName
+        songName,
       )}`;
-      window.open(searchUrl, "_blank");
+      window.open(searchUrl, '_blank');
       speakText(`Playing ${songName} on Spotify, sir...`);
     }
     ///////////////////////////////
     // search images
-    else if (command.startsWith("search image of")) {
-      const searchQuery = command.replace("search image of", "").trim();
+    else if (command.startsWith('search image of')) {
+      const searchQuery = command.replace('search image of', '').trim();
       const imageUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(
-        searchQuery
+        searchQuery,
       )}`;
-      window.open(imageUrl, "_blank");
+      window.open(imageUrl, '_blank');
       speakText(`Searching images for ${searchQuery}, sir...`);
     }
     //////////////////////////
@@ -375,54 +351,54 @@ function Chat() {
 
     ////////////////
     // Search on Google
-    else if (command.startsWith("search for")) {
+    else if (command.startsWith('search for')) {
       const searchQuery = command.slice(10).trim();
 
       // Log the extracted query for debugging
-      console.log("Search query extracted:", searchQuery);
+      console.log('Search query extracted:', searchQuery);
 
       if (searchQuery) {
         const url = `https://www.google.com/search?q=${encodeURIComponent(
-          searchQuery
+          searchQuery,
         )}`;
         console.log(`Opening Google search URL: ${url}`); // Debug log
-        window.open(url, "_blank"); // Ensure it's opening in a new tab
+        window.open(url, '_blank'); // Ensure it's opening in a new tab
         speakText(`Opening ${searchQuery} on Google, sir...`);
       } else {
-        console.log("No search query found.");
+        console.log('No search query found.');
         speakText(`Please specify what you want to search for.`);
       }
-    } else if (command.includes("open ")) {
-      const appName = command.split("open ")[1].trim();
+    } else if (command.includes('open ')) {
+      const appName = command.split('open ')[1].trim();
 
       const apps = {
-        notepad: "C:\\Windows\\system32\\notepad.exe",
-        calculator: "C:\\Windows\\system32\\calc.exe",
+        notepad: 'C:\\Windows\\system32\\notepad.exe',
+        calculator: 'C:\\Windows\\system32\\calc.exe',
         // Add more apps if needed
       };
 
       if (apps[appName]) {
         // For local applications,
         speakText(`Opening ${appName}, sir...`);
-      } else if (command.includes("song")) {
+      } else if (command.includes('song')) {
         const songName = appName;
         const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-          songName
+          songName,
         )}`;
-        window.open(searchUrl, "_blank");
+        window.open(searchUrl, '_blank');
         speakText(`Opening ${songName} on YouTube, sir...`);
       } else {
         let site = appName;
 
         // Constructing the URL
-        if (!site.startsWith("http")) {
-          if (!site.startsWith("www.")) {
-            site = "www." + site;
+        if (!site.startsWith('http')) {
+          if (!site.startsWith('www.')) {
+            site = 'www.' + site;
           }
-          site += ".com";
+          site += '.com';
         }
-        window.open("http://" + site, "_blank");
-        speakText(`Opening ${site.split(".")[1]}, sir...`);
+        window.open('http://' + site, '_blank');
+        speakText(`Opening ${site.split('.')[1]}, sir...`);
       }
     } else {
       // Check if the input contains a request for weather in a specific city
@@ -436,31 +412,31 @@ function Chat() {
         const aiResponse = await fetchAIResponse(input);
         setMessages((prev) => [
           ...prev,
-          { sender: "ai", type: "text", content: aiResponse },
+          { sender: 'ai', type: 'text', content: aiResponse },
         ]);
       }
     }
 
-    setInput(""); // Clear input after processing
+    setInput(''); // Clear input after processing
     setIsSpeechInput(false); // Reset speech input flag after sending
   };
 
   const renderMessages = () => {
     return messages.map((msg, index) => {
       const messageClass = `p-2 rounded-xl ${
-        msg.sender === "user"
-          ? "text-purple-700 flex justify-end"
-          : "text-white text-lg"
+        msg.sender === 'user'
+          ? 'text-purple-700 flex justify-end'
+          : 'text-white text-lg'
       } mb-2`;
 
-      if (msg.type === "image") {
+      if (msg.type === 'image') {
         return (
           <div
             key={index}
             className={`${messageClass} ${
               isImageFLash
-                ? "transition-all duration-200 translate-y-full bg-violet-950 animate-pulse"
-                : "animate-none"
+                ? 'transition-all duration-200 translate-y-full bg-violet-950 animate-pulse'
+                : 'animate-none'
             } `}
           >
             <a href={msg.content} download={`image-${index}.png`}>
@@ -475,15 +451,15 @@ function Chat() {
       } else {
         // Split the message into lines
         const lines = msg.content
-          .split("\n")
-          .filter((line) => line.trim() !== "");
+          .split('\n')
+          .filter((line) => line.trim() !== '');
         const headline = lines[0]; // First line as headline
         const bulletPoints = lines.slice(1); // Remaining lines as bullet points
 
         return (
           <div key={index} className={messageClass}>
             <h3 className="text-xl font-bold text-center">
-              {headline.replace(/\*/g, "")}
+              {headline.replace(/\*/g, '')}
             </h3>
             <br />
             <ul className="list-disc pl-5">
@@ -491,12 +467,12 @@ function Chat() {
                 <li
                   key={pointIndex}
                   className={`text-lg ${
-                    msg.sender === "user"
-                      ? "font-bold text-yellow-700"
-                      : "font-normal text-white"
+                    msg.sender === 'user'
+                      ? 'font-bold text-yellow-700'
+                      : 'font-normal text-white'
                   }`}
                 >
-                  {point.replace(/\*/g, "")}
+                  {point.replace(/\*/g, '')}
                 </li>
               ))}
             </ul>
@@ -507,7 +483,7 @@ function Chat() {
   };
 
   useEffect(() => {
-    if (isSpeechInput && input.trim() !== "") {
+    if (isSpeechInput && input.trim() !== '') {
       handleSend(); // Automatically sends the message when input is updated by speech
     }
   }, [input, isSpeechInput]);
@@ -530,7 +506,7 @@ function Chat() {
   };
 
   const speakText = (text) => {
-    if ("speechSynthesis" in window) {
+    if ('speechSynthesis' in window) {
       if (speechRef.current) {
         window.speechSynthesis.cancel();
       }
@@ -543,12 +519,12 @@ function Chat() {
       speechRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     } else {
-      alert("Your browser does not support speech synthesis.");
+      alert('Your browser does not support speech synthesis.');
     }
   };
 
   const stopSpeaking = () => {
-    if ("speechSynthesis" in window) {
+    if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     }
@@ -556,8 +532,8 @@ function Chat() {
 
   const renderMessageContent = (message) => {
     switch (message.type) {
-      case "text":
-        return message.sender === "ai"
+      case 'text':
+        return message.sender === 'ai'
           ? renderFormattedContent(message.content)
           : message.content;
 
@@ -567,16 +543,16 @@ function Chat() {
   };
 
   const renderFormattedContent = (content) => {
-    const formattedContent = content.split("\n").map((line, index) => {
-      if (line.startsWith("**")) {
-        const content = line.replace(/\*\*/g, "");
+    const formattedContent = content.split('\n').map((line, index) => {
+      if (line.startsWith('**')) {
+        const content = line.replace(/\*\*/g, '');
         return (
           <p key={index} className="text-bold-red text-xl">
             {content}
           </p>
         );
-      } else if (line.startsWith("*")) {
-        const content = line.replace(/\*/g, "");
+      } else if (line.startsWith('*')) {
+        const content = line.replace(/\*/g, '');
         return (
           <li key={index} className="text-black text-xl">
             {content}
@@ -585,19 +561,19 @@ function Chat() {
       } else if (line.match(/^# /)) {
         return (
           <h2 key={index} className="text-lg font-semibold text-green-600">
-            {line.replace(/^# /, "")}
+            {line.replace(/^# /, '')}
           </h2>
         );
       } else if (line.match(/^## /)) {
         return (
           <h3 key={index} className="text-md font-semibold text-yellow-600">
-            {line.replace(/^## /, "")}
+            {line.replace(/^## /, '')}
           </h3>
         );
-      } else if (line.startsWith("!")) {
+      } else if (line.startsWith('!')) {
         return (
           <p key={index} className="text-bold-blue">
-            {line.replace(/^!/, "")}
+            {line.replace(/^!/, '')}
           </p>
         );
       } else {
@@ -620,14 +596,14 @@ function Chat() {
   // Welcome message when the component mounts
   useEffect(() => {
     const currentHour = new Date().getHours();
-    let greeting = "";
+    let greeting = '';
 
     if (currentHour < 12) {
-      greeting = "Good morning";
+      greeting = 'Good morning';
     } else if (currentHour < 18) {
-      greeting = "Good afternoon";
+      greeting = 'Good afternoon';
     } else {
-      greeting = "Good evening";
+      greeting = 'Good evening';
     }
 
     const message = `${greeting}, I am your AI Assistant. I can generate image and can answer about your all queries`;
@@ -637,14 +613,14 @@ function Chat() {
   }, []);
 
   const clearChatFunction = () => {
-    localStorage.removeItem("messages");
+    localStorage.removeItem('messages');
     setMessages([]); // Clear chat state
 
     if (window.location.reload()) {
       setShowDefaultMessage(false); // Show the default message
     }
   };
-  const send = "Send";
+  const send = 'Send';
   return (
     <div className="chat-container max-w-screen-md mx-auto p-4">
       <div
@@ -654,7 +630,7 @@ function Chat() {
         {showDefaultMessage && (
           <div className="mt-[250px] p-2 rounded bg-gradient-to-r from-maroon-600 to-maroon-900 text-white">
             <h1 className="text-5xl font-bold text-white drop-shadow-lg">
-              Hello users, ask anything to me.{" "}
+              Hello users, ask anything to me.{' '}
               <span className="text-pink-700 font-extrabold drop-shadow-lg animate-pulse text-5xl">
                 I am your AI Assistant.
               </span>
@@ -695,7 +671,7 @@ function Chat() {
         <button
           onClick={startListening}
           className={`p-2  rounded-full${
-            isFlashing ? "bg-black animate-pulse" : ""
+            isFlashing ? 'bg-black animate-pulse' : ''
           } rounded text-white`}
         >
           {isFlashing ? (
@@ -724,10 +700,10 @@ function Chat() {
         <button
           onClick={stopSpeaking}
           className={`p-2 ${
-            isSpeaking ? " text-pink-800 animate-pulse" : ""
+            isSpeaking ? ' text-pink-800 animate-pulse' : ''
           } rounded text-white`}
         >
-          {isSpeaking ? "Stop AI Voice" : <FcSpeaker fontSize={30} />}
+          {isSpeaking ? 'Stop AI Voice' : <FcSpeaker fontSize={30} />}
         </button>
         <button
           className="px-4 py-2  rounded-2xl hover:bg-emerald-600"
@@ -743,7 +719,7 @@ function Chat() {
             setIsSpeechInput(false); // Ensure that typing doesn't trigger speech input handling
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               handleSend();
             }
           }}
